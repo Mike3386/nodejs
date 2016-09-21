@@ -6,11 +6,15 @@ class Author
 {
     constructor(name, year, countOfBooks)
     {
-        this.id = id;
+        regForName = /[А-Я1-9]+/;
+        if(regForName.test(name))
         this.name = name;
-        this.year = year;
-        this.countOfBooks = countOfBooks;
-
+        else throw "Wrong name";
+        this.id = GetIdForAuthor();
+        if(!isNan(year)) this.year = year;
+        else throw "Wrong year";
+        if(!isNan(year)) this.countOfBooks = countOfBooks;
+        else throw "Wrong countOfBooks";
     }
 }
 
@@ -18,10 +22,18 @@ class Book
 {
     constructor(bookName, year, author, genre) {
         this.id = GetIdForBook();
-        this.bookName = bookName;
-        this.year = year;
-        this.author = author;
+        regForBookName = /[А-Я1-9]+/;
+        if(regForBookName.test(bookName)) this.bookName = bookName;
+        else throw "Wrong bookName";
+        if(!isNan(year)) this.year = year;
+        else throw "Wrong year";
+        regForName = /[А-Я1-9]+/;
+        if(regForName.test(author)&&IsExistAuthor(author)) this.author = author;
+        else throw "Wrong author";
+        regForName = /[а-я]+/;
+        if(regForName.test(genre))
         this.genre = genre;
+        else throw "Wrong genre";
         logger.WriteToLog("Created book id="+this.id + " bookName="+
             this.bookName+" year=" + this.year + " author="+this.author + " genre="+this.genre);
     }
@@ -39,6 +51,21 @@ function GetIdForBook()
             return -a.id+b.id;
         });
         return parseInt(books[0].id)+1;
+    }
+}
+
+function GetIdForAuthor()
+{
+    var authors = GetAllAuthors();
+    if(authors.length==0) return 1;
+    else
+        if(authors.length==1) return parseInt(authors[0].id)+1;
+    {
+        authors.sort((a,b)=>
+        {
+            return -a.id+b.id;
+        });
+        return parseInt(authors[0].id)+1;
     }
 }
 
@@ -83,10 +110,49 @@ function GetAuthorById(id) {
     return author;
 }
 
-module.exports.Author = Author;
-module.exports.Book = Book;
-module.exports.GetBookById = GetBookById;
-module.exports.GetAllBooks = GetAllBooks;
-module.exports.GetAllAuthors = GetAllAuthors;
-module.exports.GetAuthorById = GetAuthorById;
-module.exports.AddBook = AddBook;
+function IsExistAuthor(name)
+{
+    var authors = GetAllAuthors();
+    var author;
+    authors.forEach(function (item, i, books) {
+        if(item.name===name)author=item;
+    })
+    return author==null;
+}
+
+function EditBook(book)
+{
+    var check = false;
+    var books = GetAllBooks();
+    books.forEach(function(element) {
+        if(parseInt(element.id)===book.id) 
+        {
+            element = book;
+            check = true;
+        }
+    }, this);
+    return check;
+}
+
+function EditAuthor(author)
+{
+    var check = false;
+    var authors = GetAllAuthors();
+    authors.forEach(function(element) {
+        if(parseInt(element.id)===author.id) {
+                element = author;
+                check = true;
+            }
+    }, this);
+    return check;
+}
+
+exports.Author = Author;
+exports.Book = Book;
+exports.GetBookById = GetBookById;
+exports.GetAllBooks = GetAllBooks;
+exports.GetAllAuthors = GetAllAuthors;
+exports.GetAuthorById = GetAuthorById;
+exports.AddBook = AddBook;
+exports.EditAuthor = EditAuthor;
+exports.EditBook = EditBook;

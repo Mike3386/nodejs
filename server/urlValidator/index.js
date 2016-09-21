@@ -8,6 +8,10 @@ var GetBook = "/GetBook";
 var GetAuthor = "/GetAuthor";
 var GetBooks = "/GetBooks";
 var GetAuthors = "/GetAuthors";
+var EditBook = "/EditBook";
+var EditAuthor = "/EditAuthor";
+var EditBookPage = "/EditBookPage";
+var EditAuthorPage = "/EditAuthorPage";
 var GetLogger = "/GetLog";
 
 var validators = {};
@@ -17,6 +21,13 @@ validators[GetAuthor] = GetAuthorValidate;
 validators[GetBooks] = GetAuthorsValidate;
 validators[GetAuthors] = GetBooksValidate;
 validators[GetLogger] = GetLoggetValidate;
+
+validators[EditAuthorPage] = EditAuthorPageValidator;
+validators[EditBookPage] = EditBookPageValidator;
+
+validators[EditAuthor] = EditAuthorValidator;
+validators[EditBook] = EditBookValidator;
+
 
 function IsNumber(s){
     return !isNaN(s);
@@ -44,7 +55,7 @@ function GetFirstElem(pathname)
 function GetLoggetValidate(req, res)
 {
     var log = files.GetTextFile(logger.PathToLogFile);
-    log = log.toString().replace("\n","<br/>");
+    log = log.toString().replace(/\n/g,"<br/>");
     SendFile(log,res);
 }
 
@@ -62,19 +73,64 @@ function GetBookValidate(req, res)
 
 function GetAuthorValidate(req, res)
 {
-
+    var get = url.parse(req.url, true).query; 
+    if(get.id && IsNumber(get.id))SendJson(models.GetAuthorById(parseInt(get.id)),res);
+    else throw "Wrong params of query";
 }
 
 function GetAuthorsValidate(req, res)
 {
+    var get = url.parse(req.url, true).query;
+    var count = (get.count&&!isNan(get.count))?(parseInt(get.count)<0)?20:parseInt(get.count):20; 
+    var books = models.GetAllBooks();
+    var countOfParts = Math.round(models.length/count);
+    if(countOfParts==0) SendJson(books, res);
+    else {
+        var arrBooks;
+        if(get.part&&!isNaN(get.part))
+        var part = parseInt(get.part);
+        if(part>countOfParts+1) throw "Wrong part"
+        else 
+        if(part<=countOfParts){
+            for(var i=count*(part-1); i<count*part; i++)
+            {
+                arrBooks.push(books[i]);
+            }
+        }
+         
+        /*
 
+
+
+        */
+    }        
 }
 
 function GetBooksValidate(req, res)
 {
-    logger.WriteToLog("Возврат книг");
+    logger.WriteToLog("Запрошены все книги");
     var books = models.GetAllBooks();
     SendJson(json, res);
+}
+
+function EditBookValidator(req, res)
+{
+
+}
+
+function EditAuthorValidator(req, res)
+{
+
+}
+
+function EditAuthorPageValidator(req, res)
+{
+
+}
+
+function EditBookPageValidator(req, res)
+{
+
 }
 
 exports.ValidateUrl = function (req,res)
@@ -88,5 +144,6 @@ exports.ValidateUrl = function (req,res)
     {
         res.writeHead(404, {'Content-Type': 'text/html ; charset=utf-8'});
         res.end((ex.message)?ex.message:ex);
+        logger.WriteToLog("Произошла ошибка " + (ex.message)?ex.message:ex);
     }
 }
