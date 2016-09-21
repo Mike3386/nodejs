@@ -1,0 +1,16 @@
+{
+  "authors":[
+    {
+      "id": 1,
+      "name":"Пушкин А.С.",
+      "year": 1799,
+      "countOfBooks": 50
+    },
+    {
+      "id": 2,
+      "name":"Толстой Л.Н.",
+      "year": 1828,
+      "countOfBooks": 50
+    }
+  ]
+}
