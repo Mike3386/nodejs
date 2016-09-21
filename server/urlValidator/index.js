@@ -25,9 +25,8 @@ function ValidateUrl(req,res)
 {
     try {
         var pathname = url.parse(req.url).pathname;
-
         logger.WriteToLog("Get request whith pathname = " + pathname);
-
+        
         if(pathname==="/") GetStartPage(res);
         else {
             if(pathname!=""&&pathname.length!=1) pathname = pathname.substr(1,pathname.length-1);
