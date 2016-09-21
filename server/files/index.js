@@ -12,4 +12,9 @@ function GetMainPage(res) {
     });
 }
 
+function GetTextFile(path, callback) {
+    return fs.readFileSync(path);
+}
+
+exports.GetTextFile = GetTextFile;
 exports.GetMainPage = GetMainPage;

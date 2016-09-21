@@ -1,6 +1,7 @@
 "use strict";
 var logger = require('../logger');
 var data = require('../data');
+
 class Author
 {
     constructor(name, year, countOfBooks)
@@ -26,9 +27,6 @@ class Book
     }
 }
 
-/**
- * @return {number}
- */
 function GetIdForBook()
 {
     var books = GetAllBooks();
@@ -64,7 +62,7 @@ function GetBookById(id) {
     var books = GetAllBooks();
     var book;
     books.forEach(function(item, i, books) {
-        if(item.id===id)book=item;
+        if(parseInt(item.id)===id)book=item;
     });
     if(book==null) throw "Bad id";
     return book;
@@ -79,7 +77,7 @@ function GetAuthorById(id) {
     var authors = GetAllAuthors();
     var author;
     authors.forEach(function (item, i, books) {
-        if(item.id===id)author=item;
+        if(parseInt(item.id)===id)author=item;
     })
     if(author==null)throw "Bad id";
     return author;
