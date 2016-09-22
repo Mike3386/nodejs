@@ -6,14 +6,14 @@ class Author
 {
     constructor(name, year, countOfBooks)
     {
-        regForName = /[А-Я1-9]+/;
+        var regForName = /[А-Я1-9]+/;
         if(regForName.test(name))
         this.name = name;
         else throw "Wrong name";
         this.id = GetIdForAuthor();
-        if(!isNan(year)) this.year = year;
+        if(!isNaN(year)) this.year = parseInt(year);
         else throw "Wrong year";
-        if(!isNan(year)) this.countOfBooks = countOfBooks;
+        if(!isNaN(year)) this.countOfBooks = countOfBooks;
         else throw "Wrong countOfBooks";
     }
 }
@@ -21,21 +21,25 @@ class Author
 class Book
 {
     constructor(bookName, year, author, genre) {
-        this.id = GetIdForBook();
-        regForBookName = /[А-Я1-9]+/;
-        if(regForBookName.test(bookName)) this.bookName = bookName;
-        else throw "Wrong bookName";
-        if(!isNan(year)) this.year = year;
-        else throw "Wrong year";
-        regForName = /[А-Я1-9]+/;
-        if(regForName.test(author)&&IsExistAuthor(author)) this.author = author;
-        else throw "Wrong author";
-        regForName = /[а-я]+/;
-        if(regForName.test(genre))
-        this.genre = genre;
-        else throw "Wrong genre";
-        logger.WriteToLog("Created book id="+this.id + " bookName="+
+        if(bookName&&year&&author&&genre)
+        {
+            this.id = GetIdForBook();
+            var regForBookName = /[А-Я1-9]+/;
+            if(regForBookName.test(bookName)) this.bookName = bookName;
+            else throw "Wrong bookName";
+            if(!isNaN(year)) this.year = parseInt(year);
+            else throw "Wrong year";
+            var regForName = /[А-Я1-9]+/;
+            if(regForName.test(author)&&IsExistAuthor(author)) this.author = author;
+            else throw "Wrong author";
+            var regForName = /[а-я]+/;
+            if(regForName.test(genre))
+            this.genre = genre;
+            else throw "Wrong genre";
+            logger.WriteToLog("Created book id="+this.id + " bookName="+
             this.bookName+" year=" + this.year + " author="+this.author + " genre="+this.genre);
+        }
+        else throw "Sended not all parametrs";
     }
 }
 
@@ -48,7 +52,7 @@ function GetIdForBook()
     {
         books.sort((a,b)=>
         {
-            return -a.id+b.id;
+            return -parseInt(a.id)+parseInt(b.id);
         });
         return parseInt(books[0].id)+1;
     }
@@ -100,6 +104,11 @@ function AddBook(book)
     data.AddBook(book);
 }
 
+function AddAuthor(author)
+{
+    data.AddAuthor(author);
+}
+
 function GetAuthorById(id) {
     var authors = GetAllAuthors();
     var author;
@@ -145,6 +154,30 @@ function EditAuthor(author)
             }
     }, this);
     return check;
+}
+
+exports.RemoveAuthor = function (id)
+{
+    var books = GetAllBooks();
+    var book = books.find((element)=>{
+        return element.id==id;
+    });
+    if(book) books = books.splice(indexOf(book),1);
+    else throw "Book not found";
+
+    SaveBooks(books);
+}
+
+exports.RemoveAuthor = function (id)
+{
+    var authors = GetAllBooks();
+    var author = books.find((element)=>{
+        return element.id==id;
+    });
+    if(author) authors =author.splice(indexOf(author),1);
+    else throw "Book not found";
+
+    SaveAuthors(authors);
 }
 
 exports.Author = Author;
