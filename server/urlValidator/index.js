@@ -19,81 +19,73 @@ var RemoveAuthor = "/RemoveAuthor";
 var AddBook = "/AddBook";
 var AddAuthor = "/AddAuthor";
 
+var Jquery = "/jquery.js";
+var StyleCss = "/style.css";
+var GetScript = "/script.js";
+
 var validators = {};
-validators[MainPage] = MainPageValidate;
-validators[GetBook] =  GetBookValidate;
-validators[GetAuthor] = GetAuthorValidate;
-validators[GetBooks] = GetAuthorsValidate;
-validators[GetAuthors] = GetBooksValidate;
-validators[GetLogger] = GetLoggetValidate;
-validators[EditAuthorPage] = EditAuthorPageValidator;
-validators[EditBookPage] = EditBookPageValidator;
-validators[EditAuthor] = EditAuthorValidator;
-validators[EditBook] = EditBookValidator;
-validators[RemoveAuthor] = RemoveAuthorValidator;
-validators[RemoveBook] = RemoveBookValidator;
-validators[AddAuthor] = AddAuthorValidator;
-validators[AddBook] = AddBookValidator;
 
-
-function IsNumber(s){
+function IsNumber(s) {
     return !isNaN(s);
 }
 
-function SendError(ex, res)
-{
+function SendError(ex, res) {
     res.writeHead(404, {'Content-Type': 'text/html ; charset=utf-8'});
     res.end((ex.message)?ex.message:ex);
     logger.WriteToLog("Произошла ошибка " + (ex.message)?ex.message:ex);
 }
 
-function SendJson(json,res)
-{
+function SendJson(json,res) {
     res.writeHead(200, {'Content-Type': 'application/json ; charset=utf-8'});
     res.end(JSON.stringify(json));
 }
 
-function SendFile(file,res)
-{
+function SendFile(file,res) {
         res.writeHead(200, {'Content-Type': 'text/html ; charset=utf-8'});
         res.end(file);
 }
 
-function GetFirstElem(pathname)
-{
+function GetFirstElem(pathname) {
     var pos = pathname.indexOf('/');
     if (pos ===0) throw "Error in pathname";
     return pathname.substr(0, pos+1);
 }
 
-function GetLoggetValidate(req, res)
-{
+function GetLoggetValidate(req, res) {
     var log = files.GetTextFile(logger.PathToLogFile);
     log = log.toString().replace(/\n/g,"<br/>");
     SendFile(log,res);
 }
 
-function MainPageValidate(req, res)
-{
+validators[GetScript] = function (req,res) {
+    files.GetJsFile(res);
+}
+
+validators[Jquery] = function (req,res) {
+    files.GetJquery(res);
+}
+
+validators[StyleCss] = function (req, res) {
+    files.GetCssFile(res);
+}
+
+validators[MainPage] = function (req, res) {
     files.GetMainPage(res);
 }
 
-function GetBookValidate(req, res)
-{
+validators[GetBook] = function (req, res) {
     var get = url.parse(req.url, true).query; 
     if(get.id&& IsNumber(get.id))SendJson(models.GetBookById(parseInt(get.id)),res);
     else throw "Wrong params of query";
 }
 
-function GetAuthorValidate(req, res)
-{
+validators[GetAuthor] = function (req, res) {
     var get = url.parse(req.url, true).query; 
     if(get.id && IsNumber(get.id))SendJson(models.GetAuthorById(parseInt(get.id)),res);
     else throw "Wrong params of query";
 }
 
-function GetAuthorsValidate(req, res)
-{
+validators[GetAuthors] = function (req, res) {
     var get = url.parse(req.url, true).query;
     var count = (get.count&&!isNan(get.count))?(parseInt(get.count)<0)?20:parseInt(get.count):20; 
     var books = models.GetAllBooks();
@@ -128,41 +120,85 @@ function GetAuthorsValidate(req, res)
     }        
 }
 
-function GetBooksValidate(req, res)
-{
+validators[GetBooks] = function (req, res) {
     logger.WriteToLog("Запрошены все книги");
     var books = models.GetAllBooks();
-    SendJson(json, res);
+    SendJson(books, res);
 }
 
-function EditBookValidator(req, res)
-{
+validators[EditBook] = function (req, res) {
+    if(req.method=="POST")
+    {
+        var data = '';
+        req.on('data', function(chunk) {
+            data += chunk.toString();
+        });
+        req.on('end', function() {
+            try{
+                data = qs.parse(data);
+                models.EditBook(data);
+                SendFile("Book add",res);
+            }
+            catch(ex)
+            {
+                SendError(ex, res);
+            }
+        });
+    }
+}
+
+validators[EditAuthor] = function (req, res) {
+    if(req.method=="POST")
+    {
+        var data = '';
+        req.on('data', function(chunk) {
+            data += chunk.toString();
+        });
+        req.on('end', function() {
+            try{
+                data = qs.parse(data);
+                models.EditAuthor(data);
+                SendFile("Author add",res);
+            }
+            catch(ex)
+            {
+                SendError(ex, res);
+            }
+        });
+    }
+}
+
+validators[EditAuthorPage] = function (req, res) {
 
 }
 
-function EditAuthorValidator(req, res)
-{
+validators[EditBookPage] = function (req, res) {
 
 }
 
-function EditAuthorPageValidator(req, res)
-{
-
+validators[AddAuthor] = function (req, res) {
+    if(req.method=="POST")
+    {
+        var data = '';
+        req.on('data', function(chunk) {
+            data += chunk.toString();
+        });
+        req.on('end', function() {
+            try{
+                data = qs.parse(data);
+                var author = new models.Author(data.name, data.year,data.countOfBooks);
+                models.AddAuthor(author);
+                SendFile("All good",res);
+            }
+            catch(ex)
+            {
+                SendError(ex, res);
+            }
+        });
+    }
 }
 
-function EditBookPageValidator(req, res)
-{
-
-}
-
-function AddAuthorValidator(req, res)
-{
-    
-
-}
-
-function AddBookValidator(req, res)
-{
+validators[AddBook] = function (req, res) {
     if(req.method=="POST")
     {
         var data = '';
@@ -184,24 +220,21 @@ function AddBookValidator(req, res)
     }
 }
 
-function RemoveAuthorValidator(req, res)
-{
+validators[RemoveAuthor] = function (req, res) {
     get = url.parse(req.url,true).query;
     if(get.id&&!isNaN(get.id)) models.RemoveAuthor(get.id);
     else throw "Bad id";
     SendFile("All good");
 }
 
-function RemoveBookValidator(req, res)
-{
+validators[RemoveBook] = function (req, res) {
     get = url.parse(req.url,true).query;
     if(get.id&&!isNaN(get.id)) models.RemoveBook(get.id);
     else throw "Bad id";
     SendFile("All good");
 }
 
-exports.ValidateUrl = function (req,res)
-{
+exports.ValidateUrl = function (req,res) {
     try {
         var pathname = url.parse(req.url).pathname;
         logger.WriteToLog("Get request whith pathname = " + pathname);

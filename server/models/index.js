@@ -2,37 +2,38 @@
 var logger = require('../logger');
 var data = require('../data');
 
-class Author
-{
-    constructor(name, year, countOfBooks)
-    {
-        var regForName = /[А-Я1-9]+/;
-        if(regForName.test(name))
-        this.name = name;
-        else throw "Wrong name";
-        this.id = GetIdForAuthor();
-        if(!isNaN(year)) this.year = parseInt(year);
-        else throw "Wrong year";
-        if(!isNaN(year)) this.countOfBooks = countOfBooks;
-        else throw "Wrong countOfBooks";
+exports.Author = class {
+    constructor(name, year, countOfBooks) {
+        if(name&&year&&countOfBooks) {
+            var regForName = /[А-Я][а-я]+\s[А-Я].[А-Я]./;
+            if(regForName.test(name)) this.name = name;
+            else throw "Wrong name";
+            this.id = GetIdForAuthor();
+            if(!isNaN(year)) this.year = parseInt(year);
+            else throw "Wrong year";
+            if(!isNaN(year)) this.countOfBooks = countOfBooks;
+            else throw "Wrong countOfBooks";
+            logger.WriteToLog("Created author id=" + this.id + " name="+
+            this.name+" year=" + this.year + " authcountOfBooksor=" + this.countOfBooks);
+        }
+        else throw "Sended not all parametrs";
     }
 }
 
-class Book
-{
+exports.Book = class {
     constructor(bookName, year, author, genre) {
         if(bookName&&year&&author&&genre)
         {
             this.id = GetIdForBook();
-            var regForBookName = /[А-Я1-9]+/;
+            var regForBookName = /[А-Яа-я\s.]+/;
             if(regForBookName.test(bookName)) this.bookName = bookName;
             else throw "Wrong bookName";
             if(!isNaN(year)) this.year = parseInt(year);
             else throw "Wrong year";
-            var regForName = /[А-Я1-9]+/;
+            var regForName = /[А-Я][а-я]+\s[А-Я].[А-Я]./;
             if(regForName.test(author)&&IsExistAuthor(author)) this.author = author;
             else throw "Wrong author";
-            var regForName = /[а-я]+/;
+            var regForName = /[А-Я][а-я]+/;
             if(regForName.test(genre))
             this.genre = genre;
             else throw "Wrong genre";
@@ -43,41 +44,32 @@ class Book
     }
 }
 
-function GetIdForBook()
-{
-    var books = GetAllBooks();
+function GetIdForBook() {
+    var books = exports.GetAllBooks();
     if(books.length==0) return 1;
-    else
-        if(books.length==1) return parseInt(books[0].id)+1;
-    {
-        books.sort((a,b)=>
-        {
-            return -parseInt(a.id)+parseInt(b.id);
-        });
-        return parseInt(books[0].id)+1;
-    }
+    else if(books.length==1) return parseInt(books[0].id)+1;
+    books.sort((a,b)=> {
+        return -parseInt(a.id)+parseInt(b.id);
+    });
+    return parseInt(books[0].id)+1;
 }
 
 function GetIdForAuthor()
 {
-    var authors = GetAllAuthors();
+    var authors = exports.GetAllAuthors();
     if(authors.length==0) return 1;
-    else
-        if(authors.length==1) return parseInt(authors[0].id)+1;
-    {
-        authors.sort((a,b)=>
-        {
-            return -a.id+b.id;
-        });
-        return parseInt(authors[0].id)+1;
-    }
+    else if(authors.length==1) return parseInt(authors[0].id)+1;
+    authors.sort((a,b)=> {
+        return -parseInt(a.id)+parseInt(b.id);
+    });
+    return parseInt(authors[0].id)+1;
 }
 
-function GetAllBooks() {
+exports.GetAllBooks = function () {
     return data.GetAllBooks();
 }
 
-function GetAllAuthors() {
+exports.GetAllAuthors = function () {
     return data.GetAllAuthos();
 }
 
@@ -89,7 +81,7 @@ function SaveAuthors(authors) {
     data.SaveAuthors(authors);
 }
 
-function GetBookById(id) {
+exports.GetBookById = function (id) {
     var books = GetAllBooks();
     var book;
     books.forEach(function(item, i, books) {
@@ -99,17 +91,17 @@ function GetBookById(id) {
     return book;
 }
 
-function AddBook(book)
+exports.AddBook = function (book)
 {
     data.AddBook(book);
 }
 
-function AddAuthor(author)
+exports.AddAuthor = function (author)
 {
     data.AddAuthor(author);
 }
 
-function GetAuthorById(id) {
+exports.GetAuthorById = function (id) {
     var authors = GetAllAuthors();
     var author;
     authors.forEach(function (item, i, books) {
@@ -119,7 +111,7 @@ function GetAuthorById(id) {
     return author;
 }
 
-function IsExistAuthor(name)
+exports.IsExistAuthor = function (name)
 {
     var authors = GetAllAuthors();
     var author;
@@ -129,7 +121,7 @@ function IsExistAuthor(name)
     return author==null;
 }
 
-function EditBook(book)
+exports.EditBook = function (book)
 {
     var check = false;
     var books = GetAllBooks();
@@ -143,7 +135,7 @@ function EditBook(book)
     return check;
 }
 
-function EditAuthor(author)
+exports.EditAuthor = function (author)
 {
     var check = false;
     var authors = GetAllAuthors();
@@ -179,13 +171,3 @@ exports.RemoveAuthor = function (id)
 
     SaveAuthors(authors);
 }
-
-exports.Author = Author;
-exports.Book = Book;
-exports.GetBookById = GetBookById;
-exports.GetAllBooks = GetAllBooks;
-exports.GetAllAuthors = GetAllAuthors;
-exports.GetAuthorById = GetAuthorById;
-exports.AddBook = AddBook;
-exports.EditAuthor = EditAuthor;
-exports.EditBook = EditBook;

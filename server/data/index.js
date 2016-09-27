@@ -1,55 +1,6 @@
 var logger = require('../logger');
 var fs = require('fs');
 
-exports.GetAllBooks = function ()
-{
-    var booksArray = require("./books.json");
-    return booksArray['books'];
-}
-
-exports.GetAllAuthos = function ()
-{
-    var authorsArray = require("./authors.json");
-    return authorsArray['authors'];
-}
-
-exports.SaveBooks = function (arr)
-{
-    var json = JSON.stringify({books:arr});
-    fs.writeFile('./server/data/books.json', json, (err)=>
-    {
-        if(err){
-            throw "Error in saving books in file"
-        }
-        else {
-            logger.WriteToLog("Books file edit");
-        }
-    });
-}
-
-
-exports.SaveAuthors = function (arr)
-{
-    var json = JSON.stringify({authors:arr});
-    fs.writeFile('authors.json', json, 'utf8', (err)=>
-    {
-        if(err){
-            throw "Error in saving authors in file"
-        }
-        else {
-            logger.WriteToLog("Authors file edit");
-        }
-    });
-}
-
-exports.AddBook = function (book)
-{
-    var books = exports.GetAllBooks();
-    if(!isExistBook(book)) books.push(book);
-    else throw "Book is already exist";
-    exports.SaveBooks(books);
-}
-
 function compareBooks(book1, book2)
 {
     return((book1.bookName==book2.bookName)&&(book1.year==book2.year)&&(book1.genre==book2.genre)&&(book1.author==book2.author));
@@ -78,6 +29,61 @@ function isExistAuthor(author)
         if(compareBooks(element, author)) check = true;
     }, this);
     return check;
+}
+
+exports.GetAllBooks = function ()
+{
+    var booksArray = require("./books.json");
+    return booksArray;
+}
+
+exports.GetAllAuthos = function ()
+{
+    var authorsArray = require("./authors.json");
+    return authorsArray;
+}
+
+exports.SaveBooks = function (arr)
+{
+    arr.sort((el1,el2)=>{
+        return (el1.id>el2.id);
+    })
+    var json = JSON.stringify(arr);
+    fs.writeFile('./server/data/books.json', json, (err)=>
+    {
+        if(err){
+            throw "Error in saving books in file"
+        }
+        else {
+            logger.WriteToLog("Books file edit");
+        }
+    });
+}
+
+
+exports.SaveAuthors = function (arr)
+{
+    arr.sort((el1,el2)=>{
+        return (el1.id>el2.id);
+    })
+    var json = JSON.stringify(arr);
+    fs.writeFile('./server/data/authors.json', json, 'utf8', (err)=>
+    {
+        if(err){
+            throw "Error in saving authors in file"
+        }
+        else {
+            logger.WriteToLog("Authors file edit");
+        }
+    });
+}
+
+exports.AddBook = function (book)
+{
+    var books = exports.GetAllBooks();
+    if(!isExistBook(book)) books.push(book);
+    else throw "Book is already exist";
+    exports.SaveBooks(books);
 }
 
 exports.AddAuthor = function (author)
