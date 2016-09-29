@@ -7,16 +7,16 @@ exports.Author = class {
         if(name&&year&&countOfBooks) {
             var regForName = /[А-Я][а-я]+\s[А-Я].[А-Я]./;
             if(regForName.test(name)) this.name = name;
-            else throw "Wrong name";
+            else throw new Exception("Wrong name");
             this.id = GetIdForAuthor();
             if(!isNaN(year)) this.year = parseInt(year);
-            else throw "Wrong year";
+            else throw new Exception("Wrong year");
             if(!isNaN(year)) this.countOfBooks = countOfBooks;
-            else throw "Wrong countOfBooks";
+            else throw new Exception("Wrong countOfBooks");
             logger.WriteToLog("Created author id=" + this.id + " name="+
             this.name+" year=" + this.year + " authcountOfBooksor=" + this.countOfBooks);
         }
-        else throw "Sended not all parametrs";
+        else throw new Exception("Sended not all parametrs");
     }
 }
 
@@ -27,20 +27,20 @@ exports.Book = class {
             this.id = GetIdForBook();
             var regForBookName = /[А-Яа-я\s.]+/;
             if(regForBookName.test(bookName)) this.bookName = bookName;
-            else throw "Wrong bookName";
+            else throw new Exception("Wrong bookName");
             if(!isNaN(year)) this.year = parseInt(year);
-            else throw "Wrong year";
+            else throw new Exception("Wrong year");
             var regForName = /[А-Я][а-я]+\s[А-Я].[А-Я]./;
             if(regForName.test(author)&&data.isExistAuthorByName(author)) this.author = author;
-            else throw "Wrong author";
+            else throw new Exception("Wrong author");
             var regForName = /[А-Я][а-я]+/;
             if(regForName.test(genre))
             this.genre = genre;
-            else throw "Wrong genre";
+            else throw new Exception("Wrong genre");
             logger.WriteToLog("Created book id="+this.id + " bookName="+
             this.bookName+" year=" + this.year + " author="+this.author + " genre="+this.genre);
         }
-        else throw "Sended not all parametrs";
+        else throw new Exception("Sended not all parametrs");
     }
 }
 
@@ -87,7 +87,7 @@ exports.GetBookById = function (id) {
     books.forEach(function(item, i, books) {
         if(parseInt(item.id)===id)book=item;
     });
-    if(book==null) throw "Bad id";
+    if(book==null) throw new Exception("Bad id");
     return book;
 }
 
@@ -107,7 +107,7 @@ exports.GetAuthorById = function (id) {
     authors.forEach(function (item, i, books) {
         if(parseInt(item.id)===id)author=item;
     })
-    if(author==null)throw "Bad id";
+    if(author==null)throw new Exception("Bad id");
     return author;
 }
 
@@ -155,7 +155,7 @@ exports.RemoveBook = function (id)
         return element.id==id;
     });
     if(book) books.splice(books.indexOf(book),1);
-    else throw "Book not found";
+    else throw new Exception("Book not found");
 
     SaveBooks(books);
 }
@@ -167,7 +167,7 @@ exports.RemoveAuthor = function (id)
         return element.id==id;
     });
     if(author) author.splice(authors.indexOf(author),1);
-    else throw "Author not found";
+    else throw new Exception("Author not found");
 
     SaveAuthors(authors);
 }

@@ -63,7 +63,7 @@ exports.SaveBooks = function (arr)
     fs.writeFile('./server/data/books.json', json, (err)=>
     {
         if(err){
-            throw "Error in saving books in file"
+            throw new Exception("Error in saving books in file");
         }
         else {
             logger.WriteToLog("Books file edit");
@@ -81,7 +81,7 @@ exports.SaveAuthors = function (arr)
     fs.writeFile('./server/data/authors.json', json, 'utf8', (err)=>
     {
         if(err){
-            throw "Error in saving authors in file"
+            throw new Exception("Error in saving authors in file");
         }
         else {
             logger.WriteToLog("Authors file edit");
@@ -93,7 +93,7 @@ exports.AddBook = function (book)
 {
     var books = exports.GetAllBooks();
     if(!isExistBook(book)) books.push(book);
-    else throw "Book is already exist";
+    else throw new Exception("Book is already exist");
     exports.SaveBooks(books);
 }
 
@@ -101,6 +101,6 @@ exports.AddAuthor = function (author)
 {
     var authors = exports.GetAllAuthos();
     if(!isExistAuthor(author)) authors.push(author);
-    else throw "Author is already exist";
+    else throw new Exception("Author is already exist");
     exports.SaveAuthors(authors);
 }

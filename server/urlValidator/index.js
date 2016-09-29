@@ -32,7 +32,7 @@ function IsNumber(s) {
 function SendError(ex, res) {
     res.writeHead(404, {'Content-Type': 'text/html ; charset=utf-8'});
     res.end((ex.message)?ex.message:ex);
-    logger.WriteToLog("Произошла ошибка " + (ex.message)?ex.message:ex);
+    logger.WriteToLog("Произошла ошибка - " + ex.message);
 }
 
 function SendJson(json,res) {
@@ -67,7 +67,7 @@ function SortArr(arr, get) {
     if(a[get.sort] > b[get.sort]) return 1;
     return 0;
     }) 
-    else if(get.sort) throw "Cant sort by this key, it's not exist";
+    else if(get.sort) throw new Exception("Cant sort by this key, it's not exist");
     return arr;
 }
 
@@ -85,7 +85,7 @@ function ProcessArr(arr, get, sortP) {
         else {
             if((arr.length%maxCount!=0)&&(arr.length>maxCount))countOfParts++;
             var part = (get.part&&!isNaN(get.part))?(parseInt(get.part)<0)?1:parseInt(get.part):1; 
-            if (part>countOfParts) throw "Wrong part"
+            if (part>countOfParts) throw new Exception("Wrong part");
             else if (part<countOfParts){
                 for(var i=maxCount*(part-1); i<maxCount*part; i++)
                 {
@@ -122,13 +122,13 @@ validators[MainPage] = function (req, res) {
 validators[GetBook] = function (req, res) {
     var get = url.parse(req.url, true).query; 
     if(get.id&& IsNumber(get.id))SendJson(models.GetBookById(parseInt(get.id)),res);
-    else throw "Wrong params of query";
+    else throw new Exception("Wrong params of query");
 }
 
 validators[GetAuthor] = function (req, res) {
     var get = url.parse(req.url, true).query; 
     if(get.id && IsNumber(get.id))SendJson(models.GetAuthorById(parseInt(get.id)),res);
-    else throw "Wrong params of query";
+    else throw new Exception("Wrong params of query");
 }
 
 validators[GetAuthors] = function (req, res) {
@@ -244,14 +244,14 @@ validators[AddBook] = function (req, res) {
 validators[RemoveAuthor] = function (req, res) {
     get = url.parse(req.url,true).query;
     if(get.id&&!isNaN(get.id)) models.RemoveAuthor(get.id);
-    else throw "Bad id";
+    else throw new Exception("Bad id")
     SendFile("Author removed", res);
 }
 
 validators[RemoveBook] = function (req, res) {
     get = url.parse(req.url,true).query;
     if(get.id&&!isNaN(get.id)) models.RemoveBook(get.id);
-    else throw "Bad id";
+    else throw new Exception("Bad id");
     SendFile("Book removed", res);
 }
 
