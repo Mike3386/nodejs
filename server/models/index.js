@@ -31,7 +31,7 @@ exports.Book = class {
             if(!isNaN(year)) this.year = parseInt(year);
             else throw "Wrong year";
             var regForName = /[А-Я][а-я]+\s[А-Я].[А-Я]./;
-            if(regForName.test(author)&&IsExistAuthor(author)) this.author = author;
+            if(regForName.test(author)&&data.isExistAuthorByName(author)) this.author = author;
             else throw "Wrong author";
             var regForName = /[А-Я][а-я]+/;
             if(regForName.test(genre))
@@ -148,13 +148,13 @@ exports.EditAuthor = function (author)
     return check;
 }
 
-exports.RemoveAuthor = function (id)
+exports.RemoveBook = function (id)
 {
-    var books = GetAllBooks();
+    var books = exports.GetAllBooks();
     var book = books.find((element)=>{
         return element.id==id;
     });
-    if(book) books = books.splice(indexOf(book),1);
+    if(book) books.splice(books.indexOf(book),1);
     else throw "Book not found";
 
     SaveBooks(books);
@@ -162,12 +162,12 @@ exports.RemoveAuthor = function (id)
 
 exports.RemoveAuthor = function (id)
 {
-    var authors = GetAllBooks();
-    var author = books.find((element)=>{
+    var authors = exports.GetAllAuthors();
+    var author = authors.find((element)=>{
         return element.id==id;
     });
-    if(author) authors =author.splice(indexOf(author),1);
-    else throw "Book not found";
+    if(author) author.splice(authors.indexOf(author),1);
+    else throw "Author not found";
 
     SaveAuthors(authors);
 }

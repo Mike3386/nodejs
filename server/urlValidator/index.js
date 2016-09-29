@@ -40,21 +40,67 @@ function SendJson(json,res) {
     res.end(JSON.stringify(json));
 }
 
+function SendElemsArr(arr, maxCount,res) {
+    var toSend = {arr:arr,partsCount:maxCount};
+    SendJson(toSend, res);
+    res.writeHead(200, {'Content-Type': 'application/json ; charset=utf-8'});
+    res.end(JSON.stringify(toSend));
+}
+
 function SendFile(file,res) {
         res.writeHead(200, {'Content-Type': 'text/html ; charset=utf-8'});
         res.end(file);
 }
 
-function GetFirstElem(pathname) {
-    var pos = pathname.indexOf('/');
-    if (pos ===0) throw "Error in pathname";
-    return pathname.substr(0, pos+1);
+function SearchArr(arr, p, get) {
+        if(get.search&&get.search!=="") {
+        arr = arr.filter(function(elem) {
+            return (elem[p].indexOf(get.search)===-1)?false:true;
+        });
+    };
+    return arr;
 }
 
-function GetLoggetValidate(req, res) {
-    var log = files.GetTextFile(logger.PathToLogFile);
-    log = log.toString().replace(/\n/g,"<br/>");
-    SendFile(log,res);
+function SortArr(arr, get) {
+    if(get.sort in arr[0]) arr.sort(function(a, b) {
+    if(a[get.sort] < b[get.sort]) return -1;
+    if(a[get.sort] > b[get.sort]) return 1;
+    return 0;
+    }) 
+    else if(get.sort) throw "Cant sort by this key, it's not exist";
+    return arr;
+}
+
+function ProcessArr(arr, get, sortP) {
+    if(arr.length==0)return {countOfParts:0,arr:arr};
+    var outArr = [];
+    var maxCount = (get.count&&!isNaN(get.count))?(parseInt(get.count)<0)?20:parseInt(get.count):20;
+    var countOfParts;
+    arr = SortArr(arr,get);
+    arr = SearchArr(arr, sortP, get);
+    if(arr.length!=0)
+    {
+        countOfParts = Math.round(arr.length/maxCount);
+        if(countOfParts==0) return {countOfParts:1,arr:arr};
+        else {
+            if((arr.length%maxCount!=0)&&(arr.length>maxCount))countOfParts++;
+            var part = (get.part&&!isNaN(get.part))?(parseInt(get.part)<0)?1:parseInt(get.part):1; 
+            if (part>countOfParts) throw "Wrong part"
+            else if (part<countOfParts){
+                for(var i=maxCount*(part-1); i<maxCount*part; i++)
+                {
+                    outArr.push(arr[i]);
+                }
+            } else if(part===countOfParts){
+                for(var i=maxCount*(part-1); i<arr.length; i++)
+                {
+                    outArr.push(arr[i]);
+                }
+            }
+        }
+    }
+    else countOfParts = 0;
+    return {countOfParts:countOfParts,arr:outArr};
 }
 
 validators[GetScript] = function (req,res) {
@@ -87,43 +133,16 @@ validators[GetAuthor] = function (req, res) {
 
 validators[GetAuthors] = function (req, res) {
     var get = url.parse(req.url, true).query;
-    var count = (get.count&&!isNan(get.count))?(parseInt(get.count)<0)?20:parseInt(get.count):20; 
-    var books = models.GetAllBooks();
-
-    if(get.search&&get.search!="") {
-        books = books.filter(function(elem) {
-            return (elem.name.indexOf(get.search)===-1)?false:true;
-        });
-    };
-    
-    var countOfParts = Math.round(models.length/count);
-    if(countOfParts==0) SendJson(books, res);
-    else {
-        var arrBooks;
-        if(get.part&&!isNaN(get.part))
-        var part = parseInt(get.part);
-        if(part>countOfParts+1) throw "Wrong part"
-        else 
-        if(part<=countOfParts){
-            for(var i=count*(part-1); i<count*part; i++)
-            {
-                arrBooks.push(books[i]);
-            }
-        }else 
-        if(part==countOfParts+1){
-            for(var i=count*countOfParts; i<books.count; i++)
-            {
-                arrBooks.push(books[i]);
-            }
-        }
-        SendJson(arrBooks, res);
-    }        
-}
+    var authors = models.GetAllAuthors();
+    if(authors.length!=0) var arr = ProcessArr(authors,get,"name");
+    SendElemsArr(arr.arr, arr.countOfParts, res);
+}    
 
 validators[GetBooks] = function (req, res) {
-    logger.WriteToLog("Запрошены все книги");
+    var get = url.parse(req.url, true).query;
     var books = models.GetAllBooks();
-    SendJson(books, res);
+    if(books.length!=0) var arr = ProcessArr(books,get,"bookName");
+    SendElemsArr(arr.arr, arr.countOfParts, res);
 }
 
 validators[EditBook] = function (req, res) {
@@ -136,7 +155,8 @@ validators[EditBook] = function (req, res) {
         req.on('end', function() {
             try{
                 data = qs.parse(data);
-                models.EditBook(data);
+                var book = new models.Book(data.bookName, data.year, data.author, data.genre); 
+                models.EditBook(book);
                 SendFile("Book add",res);
             }
             catch(ex)
@@ -157,7 +177,8 @@ validators[EditAuthor] = function (req, res) {
         req.on('end', function() {
             try{
                 data = qs.parse(data);
-                models.EditAuthor(data);
+                var author = new models.Author(data.name,data.year, data.countOfBooks);
+                models.EditAuthor(author);
                 SendFile("Author add",res);
             }
             catch(ex)
@@ -188,7 +209,7 @@ validators[AddAuthor] = function (req, res) {
                 data = qs.parse(data);
                 var author = new models.Author(data.name, data.year,data.countOfBooks);
                 models.AddAuthor(author);
-                SendFile("All good",res);
+                SendFile("Author added",res);
             }
             catch(ex)
             {
@@ -210,7 +231,7 @@ validators[AddBook] = function (req, res) {
                 data = qs.parse(data);
                 var book = new models.Book(data.name,data.year,data.author,data.genre);
                 models.AddBook(book);
-                SendFile("All good",res);
+                SendFile("Book added",res);
             }
             catch(ex)
             {
@@ -224,21 +245,28 @@ validators[RemoveAuthor] = function (req, res) {
     get = url.parse(req.url,true).query;
     if(get.id&&!isNaN(get.id)) models.RemoveAuthor(get.id);
     else throw "Bad id";
-    SendFile("All good");
+    SendFile("Author removed", res);
 }
 
 validators[RemoveBook] = function (req, res) {
     get = url.parse(req.url,true).query;
     if(get.id&&!isNaN(get.id)) models.RemoveBook(get.id);
     else throw "Bad id";
-    SendFile("All good");
+    SendFile("Book removed", res);
 }
 
 exports.ValidateUrl = function (req,res) {
     try {
         var pathname = url.parse(req.url).pathname;
         logger.WriteToLog("Get request whith pathname = " + pathname);
-        validators[pathname](req, res);
+        try{
+            validators[pathname](req, res);
+        }
+        catch(ex)
+        {
+            if(ex.message==="validators[pathname] is not a function") ex.message="Uknown URL"; 
+            throw ex;
+        }
     }
     catch (ex)
     {

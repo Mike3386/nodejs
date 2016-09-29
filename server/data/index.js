@@ -21,12 +21,22 @@ function compareAuthors(author1, author2)
     return((author1.name==author2.name)&&(author1.year==author2.year)&&(author1.countOfBooks==author2.countOfBooks));
 }
 
-function isExistAuthor(author)
+exports.isExistAuthor = function (author)
 {
     var check = false;
     var authors = exports.GetAllAuthos();
     authors.forEach(function(element) {
-        if(compareBooks(element, author)) check = true;
+        if(compareAuthors(element, author)) check = true;
+    }, this);
+    return check;
+}
+
+exports.isExistAuthorByName = function (name)
+{
+    var check = false;
+    var authors = exports.GetAllAuthos();
+    authors.forEach(function(element) {
+        if(element.name===name) check = true;
     }, this);
     return check;
 }
@@ -46,7 +56,8 @@ exports.GetAllAuthos = function ()
 exports.SaveBooks = function (arr)
 {
     arr.sort((el1,el2)=>{
-        return (el1.id>el2.id);
+        if(el1.id>el2.id) return 1;
+        else return -1;
     })
     var json = JSON.stringify(arr);
     fs.writeFile('./server/data/books.json', json, (err)=>
