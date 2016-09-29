@@ -10,8 +10,10 @@ function CreateTable(data) {
 }
 
 $('#getData').on('click', function () {
-    $.get('http://localhost:1312/GetBooks').then(function (data) {
-        CreateTable(data);
+    var query = 'http://localhost:1312/GetBooks?';
+    if($("#sort option:selected").text()!="") query+="sort="+$("#sort option:selected").text()+'&';
+    $.get(query).then(function (data) {
+        CreateTable(data.arr);
     })
 });
 

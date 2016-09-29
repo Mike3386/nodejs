@@ -51,6 +51,6 @@ exports.GetCssFile = function (res) {
     });
 }
 
-exports.GetTextFile = function GetTextFile(path, callback) {
-    return fs.readFileSync(path);
+exports.GetTextFile = function (path, callback) {
+    return fs.readFile(path, callback);
 }

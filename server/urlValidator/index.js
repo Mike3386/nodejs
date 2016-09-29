@@ -103,6 +103,16 @@ function ProcessArr(arr, get, sortP) {
     return {countOfParts:countOfParts,arr:outArr};
 }
 
+validators[GetLogger] = function (req, res) {
+    files.GetTextFile(logger.PathToLogFile, (err, data)=>{
+        if(!err) {
+            data = data.toString().replace(/\n/g,"<br/>");
+            SendFile(data.toString(), res);
+        }
+        else throw new Exception("Cant read log file");
+    })
+}
+
 validators[GetScript] = function (req,res) {
     files.GetJsFile(res);
 }
