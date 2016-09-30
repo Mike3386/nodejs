@@ -67,7 +67,7 @@ function SortArr(arr, get) {
     if(a[get.sort] > b[get.sort]) return 1;
     return 0;
     }) 
-    else if(get.sort) throw new Exception("Cant sort by this key, it's not exist");
+    else if(get.sort) throw new Error("Cant sort by this key, it's not exist");
     return arr;
 }
 
@@ -85,7 +85,7 @@ function ProcessArr(arr, get, sortP) {
         else {
             if((arr.length%maxCount!=0)&&(arr.length>maxCount))countOfParts++;
             var part = (get.part&&!isNaN(get.part))?(parseInt(get.part)<0)?1:parseInt(get.part):1; 
-            if (part>countOfParts) throw new Exception("Wrong part");
+            if (part>countOfParts) throw new Error("Wrong part");
             else if (part<countOfParts){
                 for(var i=maxCount*(part-1); i<maxCount*part; i++)
                 {
@@ -109,7 +109,7 @@ validators[GetLogger] = function (req, res) {
             data = data.toString().replace(/\n/g,"<br/>");
             SendFile(data.toString(), res);
         }
-        else throw new Exception("Cant read log file");
+        else throw new Error("Cant read log file");
     })
 }
 
@@ -132,13 +132,13 @@ validators[MainPage] = function (req, res) {
 validators[GetBook] = function (req, res) {
     var get = url.parse(req.url, true).query; 
     if(get.id&& IsNumber(get.id))SendJson(models.GetBookById(parseInt(get.id)),res);
-    else throw new Exception("Wrong params of query");
+    else throw new Error("Wrong params of query");
 }
 
 validators[GetAuthor] = function (req, res) {
     var get = url.parse(req.url, true).query; 
     if(get.id && IsNumber(get.id))SendJson(models.GetAuthorById(parseInt(get.id)),res);
-    else throw new Exception("Wrong params of query");
+    else throw new Error("Wrong params of query");
 }
 
 validators[GetAuthors] = function (req, res) {
@@ -165,9 +165,9 @@ validators[EditBook] = function (req, res) {
         req.on('end', function() {
             try{
                 data = qs.parse(data);
-                var book = new models.Book(data.bookName, data.year, data.author, data.genre); 
-                models.EditBook(book);
-                SendFile("Book add",res);
+                var book = new models.Book(data.bookName, data.year, data.author, data.genre, data.id); 
+                if(models.EditBook(book)) SendFile("Book edit",res);
+                else throw new Error("Bad id");
             }
             catch(ex)
             {
@@ -188,8 +188,8 @@ validators[EditAuthor] = function (req, res) {
             try{
                 data = qs.parse(data);
                 var author = new models.Author(data.name,data.year, data.countOfBooks);
-                models.EditAuthor(author);
-                SendFile("Author add",res);
+                if(models.EditAuthor(author)) SendFile("Author edit",res);
+                else throw new Error("Bad id");
             }
             catch(ex)
             {
@@ -254,32 +254,26 @@ validators[AddBook] = function (req, res) {
 validators[RemoveAuthor] = function (req, res) {
     get = url.parse(req.url,true).query;
     if(get.id&&!isNaN(get.id)) models.RemoveAuthor(get.id);
-    else throw new Exception("Bad id")
+    else throw new Error("Bad id")
     SendFile("Author removed", res);
 }
 
 validators[RemoveBook] = function (req, res) {
     get = url.parse(req.url,true).query;
     if(get.id&&!isNaN(get.id)) models.RemoveBook(get.id);
-    else throw new Exception("Bad id");
+    else throw new Error("Bad id");
     SendFile("Book removed", res);
 }
 
 exports.ValidateUrl = function (req,res) {
     try {
         var pathname = url.parse(req.url).pathname;
-        logger.WriteToLog("Get request whith pathname = " + pathname);
-        try{
-            validators[pathname](req, res);
-        }
-        catch(ex)
-        {
-            if(ex.message==="validators[pathname] is not a function") ex.message="Uknown URL"; 
-            throw ex;
-        }
+        logger.WriteToLog("Get request whith pathname = " + pathname + "; and full url is = " + req.url);
+        validators[pathname](req, res);
     }
     catch (ex)
     {
-       SendError(ex, res);
+        if(ex.message==="validators[pathname] is not a function") ex.message="Uknown URL"; 
+        SendError(ex, res);
     }
 }
