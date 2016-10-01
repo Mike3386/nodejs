@@ -12,9 +12,15 @@ function CreateTable(data) {
 $('#getData').on('click', function () {
     var query = 'http://localhost:1312/GetBooks?';
     if($("#sort option:selected").text()!="") query+="sort="+$("#sort option:selected").text()+'&';
+    var SearchBoxVal = $('#searchBox').val();
+    if(SearchBoxVal!="") query+="search="+SearchBoxVal+'&';
     $.get(query).then(function (data) {
         CreateTable(data.arr);
-    })
+    }).fail(function (err) {
+        alert(err);
+    });
 });
+
+
 
 var currentBooksArray;

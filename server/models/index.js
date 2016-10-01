@@ -1,27 +1,33 @@
 "use strict";
 var logger = require('../logger');
 var data = require('../data');
+var excep = require('../exception');
+var exception = excep.exception;
 
 exports.Author = class {
     constructor(name, year, countOfBooks, id) {
         if(name&&year&&countOfBooks) {
-            var regForName = /[А-Я][а-я]+\s[А-Я].[А-Я]./;
+            var errors = [];
+            var regForName = /^[А-Я][а-я]+\s[А-Я]\.[А-Я]\.$/;
             if(regForName.test(name)) this.name = name;
-            else throw new Error("Wrong name");
+            else errors.push("Неверное имя");
+            
+            this.id =(!id)?GetIdForAuthor():parseInt(id);
 
-            this.id =(!id)?GetIdForAuthor():id;
-
-            var regForYearAuthor = /[0-9][0-9].[0-9][0-9].[0-9][0-9][0-9][0-9]/;
-            if(regForYearAuthor.test(year)) this.year = parseInt(year);
-            else throw new Error("Wrong year");            
+            var regForYearAuthor = /^[0-9][0-9]\.[0-9][0-9]\.[0-9][0-9][0-9][0-9]$/;
+            if(regForYearAuthor.test(year)) this.year = year;
+            else errors.push("Неверный год");    
 
             if(!isNaN(countOfBooks)) this.countOfBooks = countOfBooks;
-            else throw new Error("Wrong countOfBooks");
-
-            logger.WriteToLog("Created author id=" + this.id + " name="+
+            else errors.push("Неверное количество книг");
+            
+            if(errors.length === 0) logger.WriteToLog("Created object author id=" + this.id + " name="+
             this.name+" year=" + this.year + " authcountOfBooksor=" + this.countOfBooks);
+            else {
+                throw new exception(errors, 500);
+            }
         }
-        else throw new Error("Sended not all parametrs");
+        else throw new exception("Sended not all parametrs", 206);
     }
 }
 
@@ -29,27 +35,31 @@ exports.Book = class {
     constructor(bookName, year, author, genre, id) {
         if(bookName&&year&&author&&genre)
         {
+            var errors = [];
             this.id = (id)?parseInt(id):GetIdForBook();
 
             var regForBookName = /[А-Яа-я\s.]+/;
             if(regForBookName.test(bookName)) this.bookName = bookName;
-            else throw new Error("Wrong bookName");
+            else errors.push("Неверное название книги");
             
             if(!isNaN(year)) this.year = parseInt(year);
-            else throw new Error("Wrong year");
+            else errors.push("Неверный год");
 
-            var regForName = /[А-Я][а-я]+\s[А-Я].[А-Я]./;
+            var regForName = /^[А-Я][а-я]+\s[А-Я]\.[А-Я]\.$/;
             if(regForName.test(author)&&data.isExistAuthorByName(author)) this.author = author;
-            else throw new Error("Wrong author");
+            else errors.push("Неверный автор");
 
-            var regForName = /[А-Я][а-я]+/;
+            var regForName = /^[А-Я][а-я]+$/;
             if(regForName.test(genre)) this.genre = genre;
-            else throw new Error("Wrong genre");
+            else errors.push("Неверный жанр");
             
-            logger.WriteToLog("Created book id="+this.id + " bookName="+
+            if(errors.length === 0) logger.WriteToLog("Created object book id="+this.id + " bookName="+
             this.bookName+" year=" + this.year + " author="+this.author + " genre="+this.genre);
+            else {
+                throw new exception(errors, 500);
+            }
         }
-        else throw new Error("Sended not all parametrs");
+        else throw new Error("Sended not all parametrs", 206);
     }
 }
 
@@ -95,7 +105,7 @@ exports.GetBookById = function (id) {
     books.forEach(function(item, i, books) {
         if(parseInt(item.id)===id)book=item;
     });
-    if(book==null) throw new Error("Bad id");
+    if(book==null) throw new exception("Bad id", 500);
     return book;
 }
 
@@ -113,7 +123,7 @@ exports.GetAuthorById = function (id) {
     authors.forEach(function (item, i, books) {
         if(parseInt(item.id)===id)author=item;
     })
-    if(author==null)throw new Error("Bad id");
+    if(author==null)throw new exception("Bad id", 500);
     return author;
 }
 
@@ -139,13 +149,13 @@ exports.EditBook = function (book) {
         }, this);
         if(check)data.SaveBooks(books);
         return check;
-    } else throw new Error("Author is not exist");
+    } else throw new exception("Author is not exist", 500);
     
 }
 
 exports.EditAuthor = function (author) {
     var check = false;
-    var authors = GetAllAuthors();
+    var authors = exports.GetAllAuthors();
     authors.forEach(function(element) {
         if(parseInt(element.id)===author.id) {
                 authors[authors.indexOf(element)] = author;
@@ -162,7 +172,7 @@ exports.RemoveBook = function (id) {
         return element.id==id;
     });
     if(book) books.splice(books.indexOf(book),1);
-    else throw new Error("Book not found");
+    else throw new exception("Book not found", 500);
 
     SaveBooks(books);
 }
@@ -172,8 +182,8 @@ exports.RemoveAuthor = function (id) {
     var author = authors.find((element)=>{
         return element.id==id;
     });
-    if(author) author.splice(authors.indexOf(author),1);
-    else throw new Error("Author not found");
+    if(author) authors.splice(authors.indexOf(author),1);
+    else throw new exception("Author not found", 500);
 
     SaveAuthors(authors);
 }

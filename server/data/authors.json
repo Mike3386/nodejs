@@ -1,1 +1,1 @@
-[{"id":1,"name":"Пушкин А.С.","year":1799,"countOfBooks":50},{"id":2,"name":"Толстой Л.Н.","year":1828,"countOfBooks":50},{"name":"Нер Р.Р.","id":3,"year":1254,"countOfBooks":"12"},{"name":"Леп Ф.Ф.","id":4,"year":20,"countOfBooks":"100"}]
+[{"name":"Пушкин А.С.","id":1,"year":"20.02.1664","countOfBooks":15},{"id":2,"name":"Толстой Л.Н.","year":"20.02.1828","countOfBooks":50},{"name":"Нер Р.Р.","id":3,"year":"20.02.1684","countOfBooks":12},{"name":"Леп Ф.Ф.","id":4,"year":"20.02.1185","countOfBooks":100}]

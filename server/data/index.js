@@ -1,5 +1,7 @@
 var logger = require('../logger');
 var fs = require('fs');
+var excep = require('../exception');
+var exception = excep.exception;
 
 function compareBooks(book1, book2) {
     return((book1.bookName==book2.bookName)&&(book1.year==book2.year)&&(book1.genre==book2.genre)&&(book1.author==book2.author));
@@ -54,7 +56,7 @@ exports.SaveBooks = function (arr) {
     var json = JSON.stringify(arr);
     fs.writeFile('./server/data/books.json', json, (err)=> {
         if(err) {
-            throw new Error("Error in saving books in file");
+            throw new exception("Error in saving books in file", 500);
         }
         else {
             logger.WriteToLog("Books file edit");
@@ -71,7 +73,7 @@ exports.SaveAuthors = function (arr) {
     fs.writeFile('./server/data/authors.json', json, 'utf8', (err)=>
     {
         if(err){
-            throw new Error("Error in saving authors in file");
+            throw new exception("Error in saving authors in file", 500);
         }
         else {
             logger.WriteToLog("Authors file edit");
@@ -79,24 +81,20 @@ exports.SaveAuthors = function (arr) {
     });
 }
 
-function AddOneBookForAuthor(author) {
-    
-}
-
 exports.AddBook = function (book) {
     var books = exports.GetAllBooks();
     if(!isExistBook(book)) 
     {
-        if(!isExistAuthorByName(book.author)) throw new Error("Author not exist");
+        if(!exports.isExistAuthorByName(book.author)) throw new exception("Author not exist", 500);
         books.push(book);
     }
-    else throw new Error("Book is already exist");
+    else throw new exception("Book is already exist", 500);
     exports.SaveBooks(books);
 }
 
 exports.AddAuthor = function (author) {
     var authors = exports.GetAllAuthos();
     if(!exports.isExistAuthor(author)) authors.push(author);
-    else throw new Error("Author is already exist");
+    else throw new exception("Author is already exist", 500);
     exports.SaveAuthors(authors);
 }

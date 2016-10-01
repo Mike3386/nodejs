@@ -12,6 +12,18 @@ exports.GetMainPage = function (res) {
     });
 }
 
+exports.GetPage = function (res, page) {
+    fs.readFile("D:/node/node/nodejs/page/"+page, function (err, data) {
+        if (err) {
+            res.writeHead(404, {'Content-Type': 'text/html'});
+        }else {
+            res.writeHead(200, {'Content-Type': 'text/html'});
+            res.write(data.toString());
+        }
+        res.end();
+    });
+}
+
 exports.GetJsFile = function (res) {
     fs.readFile("D:/node/node/nodejs/page/script.js", 'utf-8', function (err, data) {
         if (err) {

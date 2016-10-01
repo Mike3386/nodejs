@@ -3,21 +3,25 @@ var files = require('../files');
 var logger = require('../logger');
 var models = require('../models');
 var qs = require('querystring');
+var excep = require('../exception');
+var exception = excep.exception;
 
 var MainPage = "/"
+var EditBookPage = "/EditBookPage";
+var EditAuthorPage = "/EditAuthorPage";
+
 var GetBook = "/GetBook";
 var GetAuthor = "/GetAuthor";
 var GetBooks = "/GetBooks";
 var GetAuthors = "/GetAuthors";
 var EditBook = "/EditBook";
 var EditAuthor = "/EditAuthor";
-var EditBookPage = "/EditBookPage";
-var EditAuthorPage = "/EditAuthorPage";
-var GetLogger = "/GetLog";
 var RemoveBook= "/RemoveBook";
 var RemoveAuthor = "/RemoveAuthor";
 var AddBook = "/AddBook";
 var AddAuthor = "/AddAuthor";
+
+var GetLogger = "/GetLog";
 
 var Jquery = "/jquery.js";
 var StyleCss = "/style.css";
@@ -30,9 +34,17 @@ function IsNumber(s) {
 }
 
 function SendError(ex, res) {
-    res.writeHead(404, {'Content-Type': 'text/html ; charset=utf-8'});
-    res.end((ex.message)?ex.message:ex);
-    logger.WriteToLog("Произошла ошибка - " + ex.message);
+    res.writeHead(ex.code?ex.code:500, {'Content-Type': 'text/html ; charset=utf-8'});
+    var message;
+    if(Array.isArray(ex.message)) {
+        var message = '';
+        for(var i=0; i<ex.message.length; i++){
+            message+=ex.message[i]+'\n';
+        }
+    }
+    else message = ex.message;
+    res.end(message);
+    logger.WriteToLog("Произошла ошибка - " + message);
 }
 
 function SendJson(json,res) {
@@ -187,7 +199,7 @@ validators[EditAuthor] = function (req, res) {
         req.on('end', function() {
             try{
                 data = qs.parse(data);
-                var author = new models.Author(data.name,data.year, data.countOfBooks);
+                var author = new models.Author(data.name, data.year, data.countOfBooks, data.id);
                 if(models.EditAuthor(author)) SendFile("Author edit",res);
                 else throw new Error("Bad id");
             }
@@ -200,7 +212,7 @@ validators[EditAuthor] = function (req, res) {
 }
 
 validators[EditAuthorPage] = function (req, res) {
-
+    files.GetPage(res, "EditAuthor.html");
 }
 
 validators[EditBookPage] = function (req, res) {
@@ -217,7 +229,7 @@ validators[AddAuthor] = function (req, res) {
         req.on('end', function() {
             try{
                 data = qs.parse(data);
-                var author = new models.Author(data.name, data.year,data.countOfBooks);
+                var author = new models.Author(data.name, data.year, data.countOfBooks);
                 models.AddAuthor(author);
                 SendFile("Author added",res);
             }
@@ -252,17 +264,47 @@ validators[AddBook] = function (req, res) {
 }
 
 validators[RemoveAuthor] = function (req, res) {
-    get = url.parse(req.url,true).query;
-    if(get.id&&!isNaN(get.id)) models.RemoveAuthor(get.id);
-    else throw new Error("Bad id")
-    SendFile("Author removed", res);
+    if(req.method=="POST")
+    {
+        var data = '';
+        req.on('data', function(chunk) {
+            data += chunk.toString();
+        });
+        req.on('end', function() {
+            try{
+                data = qs.parse(data);
+                if(data.id&&!isNaN(data.id)) models.RemoveAuthor(data.id);
+                else throw new Error("Bad id")
+                SendFile("Author removed", res);
+            }
+            catch(ex)
+            {
+                SendError(ex, res);
+            }
+        });
+    }
 }
 
-validators[RemoveBook] = function (req, res) {
-    get = url.parse(req.url,true).query;
-    if(get.id&&!isNaN(get.id)) models.RemoveBook(get.id);
-    else throw new Error("Bad id");
-    SendFile("Book removed", res);
+validators[RemoveBook] = function (req, res) {    
+    if(req.method=="POST")
+    {
+        var data = '';
+        req.on('data', function(chunk) {
+            data += chunk.toString();
+        });
+        req.on('end', function() {
+            try{
+                data = qs.parse(data);
+                if(data.id&&!isNaN(data.id)) models.RemoveBook(data.id);
+                else throw new Error("Bad id");
+                SendFile("Book removed", res);
+            }
+            catch(ex)
+            {
+                SendError(ex, res);
+            }
+        });
+    }
 }
 
 exports.ValidateUrl = function (req,res) {
