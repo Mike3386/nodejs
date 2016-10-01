@@ -100,7 +100,7 @@ function SaveAuthors(authors) {
 }
 
 exports.GetBookById = function (id) {
-    var books = GetAllBooks();
+    var books = data.GetAllBooks();
     var book;
     books.forEach(function(item, i, books) {
         if(parseInt(item.id)===id)book=item;
@@ -118,7 +118,7 @@ exports.AddAuthor = function (author) {
 }
 
 exports.GetAuthorById = function (id) {
-    var authors = GetAllAuthors();
+    var authors = data.GetAllAuthos();
     var author;
     authors.forEach(function (item, i, books) {
         if(parseInt(item.id)===id)author=item;

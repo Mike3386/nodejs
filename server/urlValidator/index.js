@@ -6,7 +6,7 @@ var qs = require('querystring');
 var excep = require('../exception');
 var exception = excep.exception;
 
-var MainPage = "/"
+var MainPage = "/";
 var EditBookPage = "/EditBookPage";
 var EditAuthorPage = "/EditAuthorPage";
 
@@ -84,7 +84,7 @@ function SortArr(arr, get) {
 }
 
 function ProcessArr(arr, get, sortP) {
-    if(arr.length==0)return {countOfParts:0,arr:arr};
+    if(arr.length==0||get.count==0) return {countOfParts:0,arr:arr};
     var outArr = [];
     var maxCount = (get.count&&!isNaN(get.count))?(parseInt(get.count)<0)?20:parseInt(get.count):20;
     var countOfParts;
@@ -311,11 +311,11 @@ exports.ValidateUrl = function (req,res) {
     try {
         var pathname = url.parse(req.url).pathname;
         logger.WriteToLog("Get request whith pathname = " + pathname + "; and full url is = " + req.url);
-        validators[pathname](req, res);
+        if(pathname in validators) validators[pathname](req, res);
+        else throw new exception("Wrong url", 404);
     }
     catch (ex)
     {
-        if(ex.message==="validators[pathname] is not a function") ex.message="Uknown URL"; 
         SendError(ex, res);
     }
 }
