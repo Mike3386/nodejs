@@ -1,5 +1,4 @@
 var url = require('url');
-var ws = require('ws');
 var files = require('../files');
 var logger = require('../logger');
 var models = require('../models');
@@ -10,6 +9,7 @@ var exception = excep.exception;
 var MainPage = "/";
 var EditBookPage = "/EditBookPage";
 var EditAuthorPage = "/EditAuthorPage";
+var SubscribePage = "/Subscribe";
 
 var GetBook = "/GetBook";
 var GetAuthor = "/GetAuthor";
@@ -27,7 +27,7 @@ var GetLogger = "/GetLog";
 var Jquery = "/jquery.js";
 var StyleCss = "/style.css";
 var GetScript = "/script.js";
-
+var GetWsScript = "/ws.js"
 var validators = {};
 
 function IsNumber(s) {
@@ -116,6 +116,14 @@ function ProcessArr(arr, get, sortP) {
     return {countOfParts:countOfParts,arr:outArr};
 }
 
+validators[GetWsScript] = function (req,res) {
+    files.GetJsFile(res, "ws.js");
+}
+
+validators[SubscribePage] = function (req,res) {
+    files.GetPage(res, "Subscribe.html");
+}
+
 validators[GetLogger] = function (req, res) {
     files.GetTextFile(logger.PathToLogFile, (err, data)=>{
         if(!err) {
@@ -127,15 +135,15 @@ validators[GetLogger] = function (req, res) {
 }
 
 validators[GetScript] = function (req,res) {
-    files.GetJsFile(res);
+    files.GetJsFile(res, "script.js");
 }
 
 validators[Jquery] = function (req,res) {
-    files.GetJquery(res);
+    files.GetJsFile(res, "jquery.js");
 }
 
 validators[StyleCss] = function (req, res) {
-    files.GetCssFile(res);
+    files.GetCss(res, "style.css");
 }
 
 validators[MainPage] = function (req, res) {
