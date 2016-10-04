@@ -1,4 +1,5 @@
 var url = require('url');
+var ws = require('ws');
 var files = require('../files');
 var logger = require('../logger');
 var models = require('../models');
