@@ -1,7 +1,7 @@
 var socket = new WebSocket("ws://localhost:1313");
 
 $("#send").on('click', function() {
-  var outgoingMessage = $("#text").value();
+  var outgoingMessage = $("#text").val();
   socket.send(outgoingMessage);
   return false;
 });
