@@ -22,10 +22,8 @@ exports.Author = class {
             else errors.push("Неверное количество книг");
             
             if(errors.length === 0) logger.WriteToLog("Created object author id=" + this.id + " name="+
-            this.name+" year=" + this.year + " authcountOfBooksor=" + this.countOfBooks);
-            else {
-                throw new exception(errors, 500);
-            }
+                this.name+" year=" + this.year + " authcountOfBooksor=" + this.countOfBooks);
+            else throw new exception(errors, 500);
         }
         else throw new exception("Sended not all parametrs", 206);
     }
@@ -55,9 +53,7 @@ exports.Book = class {
             
             if(errors.length === 0) logger.WriteToLog("Created object book id="+this.id + " bookName="+
             this.bookName+" year=" + this.year + " author="+this.author + " genre="+this.genre);
-            else {
-                throw new exception(errors, 500);
-            }
+            else throw new exception(errors, 500);
         }
         else throw new Error("Sended not all parametrs", 206);
     }
