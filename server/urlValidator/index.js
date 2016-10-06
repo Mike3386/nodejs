@@ -3,6 +3,7 @@ var files = require('../files');
 var logger = require('../logger');
 var models = require('../models');
 var qs = require('querystring');
+var ns = require('../notifyService');
 var excep = require('../exception');
 var exception = excep.exception;
 
@@ -187,7 +188,10 @@ validators[EditBook] = function (req, res) {
             try{
                 data = qs.parse(data);
                 var book = new models.Book(data.bookName, data.year, data.author, data.genre, data.id); 
-                if(models.EditBook(book)) SendFile("Book edit",res);
+                if(models.EditBook(book)) {
+                    SendFile("Book edit",res);
+                    ns.ns.emit("EditBook");
+                }
                 else throw new Error("Bad id");
             }
             catch(ex)
@@ -209,7 +213,10 @@ validators[EditAuthor] = function (req, res) {
             try{
                 data = qs.parse(data);
                 var author = new models.Author(data.name, data.year, data.countOfBooks, data.id);
-                if(models.EditAuthor(author)) SendFile("Author edit",res);
+                if(models.EditAuthor(author)) {
+                    SendFile("Author edit",res);
+                    ns.ns.emit("EditAuthor");
+                }
                 else throw new Error("Bad id");
             }
             catch(ex)
@@ -241,6 +248,7 @@ validators[AddAuthor] = function (req, res) {
                 var author = new models.Author(data.name, data.year, data.countOfBooks);
                 models.AddAuthor(author);
                 SendFile("Author added",res);
+                ns.ns.emit("AddAuthor");
             }
             catch(ex)
             {
@@ -263,6 +271,7 @@ validators[AddBook] = function (req, res) {
                 var book = new models.Book(data.name,data.year,data.author,data.genre);
                 models.AddBook(book);
                 SendFile("Book added",res);
+                ns.ns.emit("AddBook");
             }
             catch(ex)
             {
@@ -285,6 +294,7 @@ validators[RemoveAuthor] = function (req, res) {
                 if(data.id&&!isNaN(data.id)) models.RemoveAuthor(data.id);
                 else throw new Error("Bad id")
                 SendFile("Author removed", res);
+                ns.ns.emit("RemoveAuthor");
             }
             catch(ex)
             {
@@ -307,6 +317,7 @@ validators[RemoveBook] = function (req, res) {
                 if(data.id&&!isNaN(data.id)) models.RemoveBook(data.id);
                 else throw new Error("Bad id");
                 SendFile("Book removed", res);
+                ns.ns.emit("RemoveBook");
             }
             catch(ex)
             {

@@ -40,7 +40,7 @@ exports.Book = class {
             if(regForBookName.test(bookName)) this.bookName = bookName;
             else errors.push("Неверное название книги");
             
-            if(!isNaN(year)) this.year = parseInt(year);
+            if(!isNaN(year)&&parseInt(year)>=0) this.year = parseInt(year);
             else errors.push("Неверный год");
 
             var regForName = /^[А-Я][а-я]+\s[А-Я]\.[А-Я]\.$/;

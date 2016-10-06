@@ -6,8 +6,32 @@
     <link rel='stylesheet' href='http://localhost:1312/style.css' type='text/css'/>
 </head>
 <body>
+  <span>AddBookS</span><div id='AddBook'>unSub</div><br/>
+  <span>AddAuthorS</span><div id='AddAuthor'>unSub</div><br/>
+  <span>EditBookS</span><div id='EditBook'>unSub</div><br/>
+  <span>EditAuthorS</span><div id='EditAuthor'>unSub</div><br/>
+  <span>RemoveAuthorS</span><div id='RemoveAuthor'>unSub</div><br/>
+  <span>RemoveBookS</span><div id='RemoveBook'>unSub</div><br/><br/>
 
-  <input id="text" />
+  <select id="event">
+    <option>AddBook</option>
+    <option>RemoveBook</option>
+    <option>EditBook</option>
+    <option>AddAuthor</option>
+    <option>RemoveAuthor</option>
+    <option>EditAuthor</option>
+  </select>
+
+
+  <select id="type">
+    <option>Once</option>
+    <option>Always</option>
+    <option>By</option>
+    <option>UnSub</option>
+  </select>
+
+  <input id="count"/>
+
   <button id="send">Send</button>
 
 <div id="subscribe"></div>
